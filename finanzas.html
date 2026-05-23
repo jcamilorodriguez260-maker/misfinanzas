@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MisFinanzas">
+<meta name="theme-color" content="#c8a96e">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>MisFinanzas — Control Personal</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e0c;
+    --surface: #1a1916;
+    --surface2: #242220;
+    --border: #2e2c28;
+    --accent: #c8a96e;
+    --accent2: #e8c98a;
+    --danger: #e05a5a;
+    --success: #6ec88a;
+    --saving: #6ea8e0;
+    --text: #f0ead8;
+    --muted: #7a7060;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #1a1916 0%, #0f0e0c 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 32px 20px;
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    color: var(--accent2);
+    letter-spacing: 0.08em;
+    line-height: 1;
+  }
+  header span {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    padding-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  /* LAYOUT */
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 20px 0; }
+
+  /* INCOME CARD */
+  .income-card {
+    background: linear-gradient(135deg, #1e1b10 0%, #1a1916 100%);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .income-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .income-amount {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.8rem;
+    color: var(--accent2);
+    font-weight: 700;
+    line-height: 1;
+  }
+  .income-input-wrap { flex: 1; min-width: 220px; }
+  .income-input-wrap input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--accent);
+    color: var(--accent2);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    padding: 4px 0;
+    outline: none;
+  }
+  .income-input-wrap input::placeholder { color: #4a4030; }
+
+  /* SUMMARY BAR */
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .summary-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .summary-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .summary-item.obligatorio::before { background: var(--danger); }
+  .summary-item.ahorro::before { background: var(--saving); }
+  .summary-item.libre::before { background: var(--success); }
+  .summary-item.total-gastos::before { background: var(--muted); }
+  .summary-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .summary-amount {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .summary-item.obligatorio .summary-amount { color: var(--danger); }
+  .summary-item.ahorro .summary-amount { color: var(--saving); }
+  .summary-item.libre .summary-amount { color: var(--success); }
+  .summary-item.total-gastos .summary-amount { color: var(--muted); }
+  .summary-pct {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* PROGRESS BAR */
+  .progress-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 28px;
+  }
+  .progress-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .progress-bar-bg {
+    background: var(--border);
+    border-radius: 99px;
+    height: 14px;
+    overflow: hidden;
+    display: flex;
+  }
+  .progress-seg {
+    height: 100%;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .progress-seg.ob { background: var(--danger); }
+  .progress-seg.ah { background: var(--saving); }
+  .progress-seg.li { background: var(--success); }
+  .progress-legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .legend-item {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* SECTIONS */
+  .sections { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 640px) { .sections { grid-template-columns: 1fr; } }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .section-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.ob { background: var(--danger); }
+  .dot.ah { background: var(--saving); }
+  .section-total {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .section.obligatorio .section-total { color: var(--danger); }
+  .section.ahorro .section-total { color: var(--saving); }
+
+  /* ITEMS */
+  .items-list { padding: 8px 0; }
+  .expense-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    animation: slideIn 0.25s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .expense-item:last-child { border-bottom: none; }
+  .item-name {
+    flex: 1;
+    font-size: 0.88rem;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'Exo 2', sans-serif;
+  }
+  .item-name::placeholder { color: var(--muted); }
+  .item-amount {
+    width: 110px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    padding: 5px 8px;
+    outline: none;
+    text-align: right;
+    transition: border-color 0.2s;
+  }
+  .item-amount:focus { border-color: var(--accent); }
+  .item-del {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color 0.2s, background 0.2s;
+  }
+  .item-del:hover { color: var(--danger); background: rgba(224,90,90,0.08); }
+
+  /* ADD BUTTON */
+  .add-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    border-top: 1px dashed var(--border);
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 13px 20px;
+    cursor: pointer;
+    text-align: left;
+    transition: color 0.2s, background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .add-btn:hover { color: var(--accent); background: rgba(200,169,110,0.04); }
+  .add-btn span { font-size: 1.1rem; line-height: 1; }
+
+  /* ALERT */
+  .alert {
+    background: rgba(224,90,90,0.1);
+    border: 1px solid rgba(224,90,90,0.3);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    margin-top: 20px;
+    font-size: 0.85rem;
+    color: var(--danger);
+    font-family: 'Share Tech Mono', monospace;
+    display: none;
+  }
+  .alert.show { display: block; }
+
+  /* MONTH SELECTOR */
+  .month-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .month-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    padding: 8px 14px;
+    outline: none;
+    cursor: pointer;
+  }
+  .month-select:focus { border-color: var(--accent); }
+  .month-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .save-btn {
+    margin-left: auto;
+    background: var(--accent);
+    color: #0f0e0c;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 8px 18px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .save-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+  .save-btn:active { transform: translateY(0); }
+
+  /* NOTES */
+  .notes-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-top: 20px;
+  }
+  .notes-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .notes-area {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.88rem;
+    padding: 12px 14px;
+    outline: none;
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.2s;
+  }
+  .notes-area:focus { border-color: var(--accent); }
+  .notes-area::placeholder { color: var(--muted); }
+
+  /* INGRESOS EXTRA */
+  .extra-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    animation: slideIn 0.2s ease;
+  }
+  .extra-name {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.82rem;
+    padding: 3px 0;
+    outline: none;
+  }
+  .extra-name::placeholder { color: var(--muted); }
+  .extra-name:focus { border-color: var(--success); }
+  .extra-amount {
+    width: 100px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--success);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    padding: 4px 7px;
+    outline: none;
+    text-align: right;
+    transition: border-color 0.2s;
+  }
+  .extra-amount:focus { border-color: var(--success); }
+  .extra-del {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 0.9rem; padding: 2px;
+    border-radius: 4px; transition: color 0.2s;
+  }
+  .extra-del:hover { color: var(--danger); }
+
+  /* META DE AHORRO */
+  .meta-card {
+    background: var(--surface);
+    border: 1px solid rgba(110,168,224,0.35);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin-top: 20px;
+  }
+  .meta-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .meta-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--saving);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .meta-add-btn {
+    background: rgba(110,168,224,0.12);
+    border: 1px solid rgba(110,168,224,0.3);
+    color: var(--saving);
+    border-radius: 6px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .meta-add-btn:hover { background: rgba(110,168,224,0.22); }
+  .meta-list { display: flex; flex-direction: column; gap: 14px; }
+  .meta-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    animation: slideIn 0.25s ease;
+  }
+  .meta-item-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .meta-item-name {
+    flex: 1;
+    min-width: 140px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.9rem;
+    padding: 3px 0;
+    outline: none;
+  }
+  .meta-item-name::placeholder { color: var(--muted); }
+  .meta-item-name:focus { border-color: var(--saving); }
+  .meta-field-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  .meta-field-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .meta-input {
+    width: 120px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.82rem;
+    padding: 5px 8px;
+    outline: none;
+    text-align: right;
+    transition: border-color 0.2s;
+  }
+  .meta-input:focus { border-color: var(--saving); }
+  .meta-del {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 1rem; padding: 2px 4px;
+    border-radius: 4px; transition: color 0.2s; align-self: flex-start;
+  }
+  .meta-del:hover { color: var(--danger); }
+  .meta-bar-wrap { margin-top: 4px; }
+  .meta-bar-labels { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .meta-bar-pct { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: var(--saving); }
+  .meta-bar-amounts { font-family: 'Share Tech Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+  .meta-bar-bg { background: var(--border); border-radius: 99px; height: 8px; overflow: hidden; }
+  .meta-bar-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--saving), #a0d4f5);
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .meta-bar-fill.done { background: linear-gradient(90deg, var(--success), #a0f5b8); }
+  .meta-eta { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; color: var(--muted); margin-top: 5px; }
+  .meta-empty { font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; color: var(--muted); text-align: center; padding: 18px 0 4px; letter-spacing: 0.08em; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--success);
+    color: #0f0e0c;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    padding: 12px 22px;
+    border-radius: 8px;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>MisFinanzas</h1>
+  <span>Control Personal</span>
+</header>
+
+<div class="container">
+
+  <!-- MES -->
+  <div class="month-row">
+    <span class="month-label">Período:</span>
+    <select class="month-select" id="monthSelect">
+      <option>Enero</option><option>Febrero</option><option>Marzo</option>
+      <option>Abril</option><option>Mayo</option><option>Junio</option>
+      <option>Julio</option><option>Agosto</option><option>Septiembre</option>
+      <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+    </select>
+    <select class="month-select" id="yearSelect"></select>
+    <button class="save-btn" onclick="saveData()">Guardar</button>
+  </div>
+
+  <!-- INGRESO -->
+  <div class="income-card" style="flex-wrap:wrap; gap:20px;">
+    <div style="flex:1; min-width:200px;">
+      <div class="income-label">💰 Ingreso mensual base</div>
+      <div class="income-input-wrap">
+        <input type="number" id="income" placeholder="0" min="0" oninput="recalculate()" />
+      </div>
+    </div>
+    <div style="flex:1; min-width:200px; border-left:1px solid var(--border); padding-left:20px;">
+      <div class="income-label" style="color:var(--success);">⚡ Ingresos extra</div>
+      <div id="extraList" style="display:flex; flex-direction:column; gap:6px; margin-bottom:4px;"></div>
+      <button class="add-btn" style="border:none; padding:4px 0; font-size:0.65rem;" onclick="addExtra()"><span>+</span> Agregar ingreso extra</button>
+    </div>
+    <div style="text-align:right; min-width:150px; border-left:1px solid var(--border); padding-left:20px;">
+      <div class="income-label" style="color:var(--success);">Total ingresos</div>
+      <div class="income-amount" id="totalIncomeDisplay" style="font-size:1.8rem; color:var(--success);">$0</div>
+      <div style="margin-top:12px;">
+        <div class="income-label">Disponible</div>
+        <div class="income-amount" id="freeDisplay">$0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESUMEN -->
+  <div class="summary-bar">
+    <div class="summary-item obligatorio">
+      <div class="summary-label">Gastos obligatorios</div>
+      <div class="summary-amount" id="sumOb">$0</div>
+      <div class="summary-pct" id="pctOb">0% del ingreso</div>
+    </div>
+    <div class="summary-item ahorro">
+      <div class="summary-label">Ahorro</div>
+      <div class="summary-amount" id="sumAh">$0</div>
+      <div class="summary-pct" id="pctAh">0% del ingreso</div>
+    </div>
+    <div class="summary-item libre">
+      <div class="summary-label">Libre / Ocio</div>
+      <div class="summary-amount" id="sumLib">$0</div>
+      <div class="summary-pct" id="pctLib">0% del ingreso</div>
+    </div>
+    <div class="summary-item total-gastos">
+      <div class="summary-label">Total gastado</div>
+      <div class="summary-amount" id="sumTotal">$0</div>
+      <div class="summary-pct" id="pctTotal">0% del ingreso</div>
+    </div>
+  </div>
+
+  <!-- BARRA -->
+  <div class="progress-wrap">
+    <div class="progress-label">Distribución del ingreso</div>
+    <div class="progress-bar-bg">
+      <div class="progress-seg ob" id="barOb" style="width:0%"></div>
+      <div class="progress-seg ah" id="barAh" style="width:0%"></div>
+      <div class="progress-seg li" id="barLib" style="width:0%"></div>
+    </div>
+    <div class="progress-legend">
+      <span class="legend-item"><span class="legend-dot" style="background:var(--danger)"></span>Obligatorio</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--saving)"></span>Ahorro</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--success)"></span>Libre</span>
+    </div>
+  </div>
+
+  <!-- SECCIONES -->
+  <div class="sections">
+
+    <!-- OBLIGATORIOS -->
+    <div class="section obligatorio">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="dot ob"></span> Gastos Obligatorios
+        </div>
+        <div class="section-total" id="totalOb">$0</div>
+      </div>
+      <div class="items-list" id="listOb"></div>
+      <button class="add-btn" onclick="addItem('ob')"><span>+</span> Agregar gasto</button>
+    </div>
+
+    <!-- AHORRO -->
+    <div class="section ahorro">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="dot ah"></span> Ahorro
+        </div>
+        <div class="section-total" id="totalAh">$0</div>
+      </div>
+      <div class="items-list" id="listAh"></div>
+      <button class="add-btn" onclick="addItem('ah')"><span>+</span> Agregar meta de ahorro</button>
+    </div>
+
+  </div>
+
+  <!-- GASTO LIBRE -->
+  <div class="section" style="margin-top:20px; border-color: rgba(110,200,138,0.3);">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="dot" style="background:var(--success)"></span> Gastos de Ocio / Variables
+      </div>
+      <div class="section-total" style="color:var(--success)" id="totalLib">$0</div>
+    </div>
+    <div class="items-list" id="listLib"></div>
+    <button class="add-btn" onclick="addItem('lib')"><span>+</span> Agregar gasto variable</button>
+  </div>
+
+  <!-- ALERTA -->
+  <div class="alert" id="alertBox">⚠ Tus gastos superan tu ingreso mensual. Revisa tu presupuesto.</div>
+
+  <!-- META DE AHORRO -->
+  <div class="meta-card">
+    <div class="meta-header">
+      <div class="meta-title">🎯 Metas de Ahorro</div>
+      <button class="meta-add-btn" onclick="addMeta()">+ Nueva meta</button>
+    </div>
+    <div class="meta-list" id="metaList">
+      <div class="meta-empty" id="metaEmpty">Sin metas aún — agrega una para comenzar a rastrear tu progreso</div>
+    </div>
+  </div>
+
+  <!-- NOTAS -->
+  <div class="notes-card">
+    <div class="notes-label">📝 Notas del mes</div>
+    <textarea class="notes-area" id="notes" placeholder="Escribe observaciones, recordatorios o metas para este mes…" oninput="autoSave()"></textarea>
+  </div>
+
+</div>
+
+<div class="toast" id="toast">✓ Guardado</div>
+
+<script>
+  // --- ESTADO ---
+  let data = {
+    income: 0,
+    ob: [], ah: [], lib: [],
+    notes: '',
+    metas: [],
+    extras: []
+  };
+  let autoSaveTimer;
+
+  // --- INICIO ---
+  const monthSel = document.getElementById('monthSelect');
+  const yearSel  = document.getElementById('yearSelect');
+  const now = new Date();
+  monthSel.selectedIndex = now.getMonth();
+  for (let y = now.getFullYear() - 2; y <= now.getFullYear() + 2; y++) {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y;
+    if (y === now.getFullYear()) o.selected = true;
+    yearSel.appendChild(o);
+  }
+  monthSel.addEventListener('change', loadData);
+  yearSel.addEventListener('change', loadData);
+  loadData();
+
+  // --- CLAVE DE ALMACENAMIENTO ---
+  function storageKey() {
+    return `finanzas_${yearSel.value}_${monthSel.selectedIndex}`;
+  }
+
+  // --- CARGAR ---
+  function loadData() {
+    const raw = localStorage.getItem(storageKey());
+    if (raw) {
+      data = JSON.parse(raw);
+    } else {
+      data = { income: 0, ob: [], ah: [], lib: [], notes: '' };
+    }
+    renderAll();
+  }
+
+  // --- GUARDAR ---
+  function saveData() {
+    data.income = parseFloat(document.getElementById('income').value) || 0;
+    data.notes  = document.getElementById('notes').value;
+    data.ob  = collectItems('ob');
+    data.ah  = collectItems('ah');
+    data.lib = collectItems('lib');
+    data.extras = collectExtras();
+    data.metas = collectMetas();
+    localStorage.setItem(storageKey(), JSON.stringify(data));
+    showToast('✓ Guardado');
+  }
+
+  function autoSave() {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(saveData, 1200);
+  }
+
+  // --- RENDER ---
+  function renderAll() {
+    document.getElementById('income').value = data.income || '';
+    document.getElementById('notes').value  = data.notes || '';
+    renderList('ob', data.ob);
+    renderList('ah', data.ah);
+    renderList('lib', data.lib);
+    renderExtras(data.extras || []);
+    renderMetas(data.metas || []);
+    recalculate();
+  }
+
+  function renderList(type, items) {
+    const list = document.getElementById('list' + type.charAt(0).toUpperCase() + type.slice(1));
+    list.innerHTML = '';
+    (items || []).forEach(item => addItemDOM(type, item.name, item.amount));
+  }
+
+  // --- AGREGAR ITEM ---
+  function addItem(type) {
+    addItemDOM(type, '', '');
+    autoSave();
+  }
+
+  function addItemDOM(type, name, amount) {
+    const listId = 'list' + type.charAt(0).toUpperCase() + type.slice(1);
+    const list = document.getElementById(listId);
+    const div = document.createElement('div');
+    div.className = 'expense-item';
+    div.innerHTML = `
+      <input class="item-name" type="text" placeholder="Nombre del gasto" value="${name}" oninput="autoSave()">
+      <input class="item-amount" type="number" placeholder="$0" min="0" value="${amount}" oninput="recalculate(); autoSave()">
+      <button class="item-del" onclick="delItem(this)">✕</button>
+    `;
+    list.appendChild(div);
+    if (!name) div.querySelector('.item-name').focus();
+  }
+
+  function delItem(btn) {
+    btn.closest('.expense-item').remove();
+    recalculate();
+    autoSave();
+  }
+
+  // --- RECOLECTAR ---
+  function collectItems(type) {
+    const listId = 'list' + type.charAt(0).toUpperCase() + type.slice(1);
+    const items = [];
+    document.querySelectorAll(`#${listId} .expense-item`).forEach(row => {
+      const n = row.querySelector('.item-name').value.trim();
+      const a = parseFloat(row.querySelector('.item-amount').value) || 0;
+      if (n || a) items.push({ name: n, amount: a });
+    });
+    return items;
+  }
+
+  // --- RECALCULAR ---
+  function recalculate() {
+    const income = parseFloat(document.getElementById('income').value) || 0;
+    const extraTotal = sumExtras();
+    const totalIncome = income + extraTotal;
+    const fmt2 = v => '$' + Math.abs(v).toLocaleString('es-CO', { minimumFractionDigits: 0 });
+    document.getElementById('totalIncomeDisplay').textContent = fmt2(totalIncome);
+    const ob  = sumList('listOb');
+    const ah  = sumList('listAh');
+    const lib = sumList('listLib');
+    const total = ob + ah + lib;
+    const free  = totalIncome - total;
+
+    const fmt = v => '$' + Math.abs(v).toLocaleString('es-CO', { minimumFractionDigits: 0 });
+    const pct  = v => totalIncome ? ((v / totalIncome) * 100).toFixed(1) + '% del ingreso' : '0% del ingreso';
+
+    document.getElementById('freeDisplay').textContent = (free < 0 ? '-' : '') + fmt(free);
+    document.getElementById('freeDisplay').style.color = free < 0 ? 'var(--danger)' : 'var(--accent2)';
+
+    document.getElementById('sumOb').textContent  = fmt(ob);
+    document.getElementById('sumAh').textContent  = fmt(ah);
+    document.getElementById('sumLib').textContent = fmt(lib);
+    document.getElementById('sumTotal').textContent = fmt(total);
+
+    document.getElementById('pctOb').textContent  = pct(ob);
+    document.getElementById('pctAh').textContent  = pct(ah);
+    document.getElementById('pctLib').textContent = pct(lib);
+    document.getElementById('pctTotal').textContent = pct(total);
+
+    document.getElementById('totalOb').textContent  = fmt(ob);
+    document.getElementById('totalAh').textContent  = fmt(ah);
+    document.getElementById('totalLib').textContent = fmt(lib);
+
+    // Barra
+    const pOb  = totalIncome ? Math.min((ob  / totalIncome) * 100, 100) : 0;
+    const pAh  = totalIncome ? Math.min((ah  / totalIncome) * 100, 100 - pOb) : 0;
+    const pLib = totalIncome ? Math.min((lib / totalIncome) * 100, 100 - pOb - pAh) : 0;
+    document.getElementById('barOb').style.width  = pOb  + '%';
+    document.getElementById('barAh').style.width  = pAh  + '%';
+    document.getElementById('barLib').style.width = pLib + '%';
+
+    // Alerta
+    document.getElementById('alertBox').classList.toggle('show', totalIncome > 0 && total > totalIncome);
+  }
+
+  function sumList(listId) {
+    let s = 0;
+    document.querySelectorAll(`#${listId} .item-amount`).forEach(i => s += parseFloat(i.value) || 0);
+    return s;
+  }
+
+  // --- INGRESOS EXTRA ---
+  function addExtra() {
+    addExtraDOM({ name: '', amount: '' });
+    autoSave();
+  }
+
+  function renderExtras(extras) {
+    const list = document.getElementById('extraList');
+    list.innerHTML = '';
+    (extras || []).forEach(e => addExtraDOM(e));
+  }
+
+  function addExtraDOM(e) {
+    const list = document.getElementById('extraList');
+    const div = document.createElement('div');
+    div.className = 'extra-item';
+    div.innerHTML = `
+      <input class="extra-name" type="text" placeholder="Ej: Bono, Freelance…" value="${e.name || ''}" oninput="autoSave()">
+      <input class="extra-amount" type="number" placeholder="$0" min="0" value="${e.amount || ''}" oninput="recalculate(); autoSave()">
+      <button class="extra-del" onclick="delExtra(this)">✕</button>
+    `;
+    list.appendChild(div);
+    if (!e.name) div.querySelector('.extra-name').focus();
+  }
+
+  function delExtra(btn) {
+    btn.closest('.extra-item').remove();
+    recalculate();
+    autoSave();
+  }
+
+  function collectExtras() {
+    const extras = [];
+    document.querySelectorAll('.extra-item').forEach(row => {
+      const n = row.querySelector('.extra-name').value.trim();
+      const a = parseFloat(row.querySelector('.extra-amount').value) || 0;
+      if (n || a) extras.push({ name: n, amount: a });
+    });
+    return extras;
+  }
+
+  function sumExtras() {
+    let s = 0;
+    document.querySelectorAll('.extra-amount').forEach(i => s += parseFloat(i.value) || 0);
+    return s;
+  }
+
+  // --- METAS DE AHORRO ---
+  function addMeta() {
+    addMetaDOM({ name: '', meta: '', acumulado: '' });
+    autoSave();
+  }
+
+  function renderMetas(metas) {
+    const list = document.getElementById('metaList');
+    list.innerHTML = '';
+    if (!metas || metas.length === 0) {
+      list.innerHTML = '<div class="meta-empty" id="metaEmpty">Sin metas aún — agrega una para comenzar a rastrear tu progreso</div>';
+      return;
+    }
+    metas.forEach(m => addMetaDOM(m));
+  }
+
+  function addMetaDOM(m) {
+    const list = document.getElementById('metaList');
+    const empty = document.getElementById('metaEmpty');
+    if (empty) empty.remove();
+
+    const div = document.createElement('div');
+    div.className = 'meta-item';
+    div.innerHTML = `
+      <div class="meta-item-top">
+        <input class="meta-item-name" type="text" placeholder="Ej: Fondo de emergencia, Viaje, Computador…" value="${m.name || ''}" oninput="updateMetaBar(this); autoSave()">
+        <div class="meta-field-wrap">
+          <span class="meta-field-label">Meta total</span>
+          <input class="meta-input" type="number" placeholder="$0" min="0" value="${m.meta || ''}" oninput="updateMetaBar(this); autoSave()">
+        </div>
+        <div class="meta-field-wrap">
+          <span class="meta-field-label">Ya ahorrado</span>
+          <input class="meta-input" type="number" placeholder="$0" min="0" value="${m.acumulado || ''}" oninput="updateMetaBar(this); autoSave()">
+        </div>
+        <button class="meta-del" onclick="delMeta(this)">✕</button>
+      </div>
+      <div class="meta-bar-wrap">
+        <div class="meta-bar-labels">
+          <span class="meta-bar-pct">0%</span>
+          <span class="meta-bar-amounts">$0 / $0</span>
+        </div>
+        <div class="meta-bar-bg"><div class="meta-bar-fill" style="width:0%"></div></div>
+        <div class="meta-eta"></div>
+      </div>
+    `;
+    list.appendChild(div);
+    updateMetaBar(div.querySelector('.meta-item-name'));
+    if (!m.name) div.querySelector('.meta-item-name').focus();
+  }
+
+  function updateMetaBar(el) {
+    const item   = el.closest('.meta-item');
+    const inputs = item.querySelectorAll('.meta-input');
+    const meta   = parseFloat(inputs[0].value) || 0;
+    const acum   = parseFloat(inputs[1].value) || 0;
+    const pct    = meta > 0 ? Math.min((acum / meta) * 100, 100) : 0;
+    const done   = pct >= 100;
+    const fmt    = v => '$' + v.toLocaleString('es-CO', { minimumFractionDigits: 0 });
+
+    item.querySelector('.meta-bar-pct').textContent       = pct.toFixed(1) + '%';
+    item.querySelector('.meta-bar-amounts').textContent   = fmt(acum) + ' / ' + fmt(meta);
+    item.querySelector('.meta-bar-fill').style.width      = pct + '%';
+    item.querySelector('.meta-bar-fill').className        = 'meta-bar-fill' + (done ? ' done' : '');
+
+    const etaEl = item.querySelector('.meta-eta');
+    if (done) {
+      etaEl.textContent = '✓ ¡Meta alcanzada!';
+      etaEl.style.color = 'var(--success)';
+    } else if (meta > 0 && acum < meta) {
+      const falta = meta - acum;
+      // Calcula meses restantes basado en el ahorro mensual actual
+      const ahMensual = sumList('listAh');
+      if (ahMensual > 0) {
+        const meses = Math.ceil(falta / ahMensual);
+        etaEl.textContent = `Faltan ${fmt(falta)} — aprox. ${meses} mes${meses !== 1 ? 'es' : ''} con tu ahorro actual`;
+      } else {
+        etaEl.textContent = `Faltan ${fmt(falta)} por ahorrar`;
+      }
+      etaEl.style.color = 'var(--muted)';
+    } else {
+      etaEl.textContent = '';
+    }
+  }
+
+  function delMeta(btn) {
+    const item = btn.closest('.meta-item');
+    item.remove();
+    if (document.querySelectorAll('.meta-item').length === 0) {
+      document.getElementById('metaList').innerHTML =
+        '<div class="meta-empty" id="metaEmpty">Sin metas aún — agrega una para comenzar a rastrear tu progreso</div>';
+    }
+    autoSave();
+  }
+
+  function collectMetas() {
+    const metas = [];
+    document.querySelectorAll('.meta-item').forEach(item => {
+      const name   = item.querySelector('.meta-item-name').value.trim();
+      const inputs = item.querySelectorAll('.meta-input');
+      const meta   = parseFloat(inputs[0].value) || 0;
+      const acum   = parseFloat(inputs[1].value) || 0;
+      if (name || meta) metas.push({ name, meta, acumulado: acum });
+    });
+    return metas;
+  }
+
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log('SW registrado'))
+        .catch(e => console.log('SW error:', e));
+    });
+  }
+</script>
+</body>
+</html>
