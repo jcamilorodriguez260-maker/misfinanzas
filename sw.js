@@ -1,10 +1,11 @@
-const CACHE_NAME = 'misfinanzas-v1';
+const CACHE_NAME = 'misfinanzas-v2';
 const ASSETS = [
-  './finanzas.html',
-  './manifest.json'
+  '/misfinanzas/finanzas.html',
+  '/misfinanzas/manifest.json',
+  '/misfinanzas/icon-192.png',
+  '/misfinanzas/icon-512.png'
 ];
 
-// Instalación: guarda los archivos en caché
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
@@ -12,7 +13,6 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Activación: elimina cachés viejos
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -22,7 +22,6 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch: sirve desde caché, si no hay conexión igual funciona
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(cached => {
@@ -32,7 +31,7 @@ self.addEventListener('fetch', event => {
         const clone = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         return response;
-      }).catch(() => caches.match('./finanzas.html'));
+      }).catch(() => caches.match('/misfinanzas/finanzas.html'));
     })
   );
 });
